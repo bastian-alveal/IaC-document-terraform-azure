@@ -82,7 +82,8 @@ Para configurar el backend en cada equipo, siga estos pasos:
 # Obtener la clave de acceso
 az storage account keys list --resource-group "<nombre de recurso>" --account-name "<nombre de cuenta de blob-backend.tf>"
 ```
-- eliminar las comillas ("") y los(<>)  y reemplazar con los valores respectivos para su uso particular
+- esto se ejecuta en la terminal conectada a az
+- eliminar ("") y (<>) / reemplazar con los valores respectivos para su uso particular (definidos en blob-backend)
 
 2. Configure la variable en su archivo de configuración local (`.zshrc` o `.bashrc`):
 ```bash
