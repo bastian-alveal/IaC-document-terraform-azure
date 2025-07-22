@@ -81,7 +81,7 @@ Este proyecto utiliza Azure Blob Storage como backend para Terraform, lo que per
 3. **Seguridad**: Credenciales almacenadas de forma segura en cada equipo
 
 ### Configuración del Backend
-El repositorio [IaC-azureBlob](https://github.com/bastian-alveal/IaC-azureBlob) se utiliza para crear el almacenamiento Blob donde se guardará el estado de Terraform. Luego, el repositorio [IaC-azure-appservice](https://github.com/bastian-alveal/IaC-azure-appservice) se conecta a este backend a través del archivo `backend.tf`.
+El repositorio [IaC-azureBlob](https://github.com/bastian-alveal/IaC-azureBlob) se utiliza para crear el almacenamiento Blob donde se guardará el estado de Terraform. Luego, el repositorio [IaC-azure-appservice](https://github.com/bastian-alveal/IaC-azure-appservice) y los siguientes se conectaran a este backend a través del archivo `backend.tf` configurado en cada repositorio.
 
 ### Configuración Local
 Para configurar el backend en cada equipo, siga estos pasos:
