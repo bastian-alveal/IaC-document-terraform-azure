@@ -36,6 +36,7 @@ TF_VAR_tenant_id="your-tenant-id"
 TF_VAR_client_id="your-client-id"
 TF_VAR_client_secret="your-client-secret"
 ```
+- estos .env se pueden descartar si el entorno de ejecución ya se ecuentra con una cuenta logeada en az con los permisos para realizar la creación de estos servicios.
 
 2. **Archivos de Configuración**
 ```.tfvars
