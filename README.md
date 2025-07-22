@@ -7,6 +7,12 @@
 ## 🚀 ¿Qué es esto?
 Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automatizar la configuración de infraestructura en Azure. La idea es mantener la infraestructura en archivos de configuración en lugar de configurar manualmente recursos.
 
+## 🛠️ Prerrequisitos Para los repositorios asociados a este.
+- Azure CLI instalado y configurado
+- Terraform >= 1.5.0
+- Suscripción a Azure con permisos apropiados
+- Credenciales de Azure configuradas
+
 ## 🛠️ Tecnologías Utilizadas
 - [Terraform](https://terraform.io) (Para definición de infraestructura)
 - [Azure CLI](https://docs.microsoft.com/cli/azure) (Para interacción con Azure)
