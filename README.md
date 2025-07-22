@@ -88,7 +88,7 @@ Para configurar el backend en cada equipo, siga estos pasos:
 1. Obtenga la clave de acceso al almacenamiento:
 ```bash
 # Obtener la clave de acceso
-az storage account keys list --resource-group "<nombre de recurso>" --account-name "<nombre declarado en archivo backend.tf>"
+az storage account keys list --resource-group "<nombre de recurso>" --account-name "<nombre de cuenta de blob-backend.tf>"
 ```
 - eliminar las comillas ("") y los(<>)  y reemplazar con los valores respectivos para su uso particular
 
