@@ -54,16 +54,15 @@ IaC/
 │   └── README.md
 ├── IaC-azure-appservice/
 │   ├── main.tf
-│   ├── variables.tf
-│   └── outputs.tf
-│   └── ##aqui iria el .tfvars
+│   ├──  backend.tf
+│   ├── README.MD
+│   ├──  ##aqui iria el .tfvars
+│   └── .gitignore
 ├── IaC-azureBlob/
-│   ├── main.tf
-│   ├── variables.tf
-│   └── outputs.tf
-└── config/
-    ├── .env
-    └── config.yaml
+│   ├── blob-backend.tf
+│   ├── README.MD
+│   └── .gitignore
+
 ```
 
 ## 🎯 ¿Por qué usarlo?
