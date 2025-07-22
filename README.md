@@ -38,9 +38,8 @@ TF_VAR_client_secret="your-client-secret"
 ```
 - estos .env se pueden descartar si el entorno de ejecución ya se ecuentra con una cuenta logeada en az con los permisos para realizar la creación de estos servicios.
 
-2. **Archivos de Configuración**
-```.tfvars
-
+2. **Archivos de Configuración  {terraform}.tfvars**
+```
 ghcr_username = "nombre usuarios"
 ghcr_pat      = "token-git"  # con permisos de lectura de registri de github
 
