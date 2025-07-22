@@ -3,14 +3,6 @@
 [![Terraform](https://img.shields.io/badge/terraform-20232a.svg?style=for-the-badge&logo=terraform&logoColor=6298ff)](https://terraform.io)
 [![Azure](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com)
 
-## 📋 Índice
-- [🚀 ¿Qué es esto?](#qué-es-esto)
-- [🛠️ Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [📦 Repositorios Disponibles](#repositorios-disponibles)
-- [📁 Archivos Necesarios](#archivos-necesarios)
-- [📁 Estructura de Archivos](#estructura-de-archivos)
-- [🎯 ¿Por qué usarlo?](#por-qué-usarlo)
-- [☁️ Trabajo Colaborativo con Terraform](#trabajo-colaborativo-con-terraform)
 
 ## 🚀 ¿Qué es esto?
 Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automatizar la configuración de infraestructura en Azure. La idea es mantener la infraestructura en archivos de configuración en lugar de configurar manualmente recursos.
