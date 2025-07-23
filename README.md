@@ -12,6 +12,7 @@ Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automa
 - Terraform >= 1.5.0
 - Suscripción a Azure con permisos apropiados
 - Credenciales de Azure configuradas
+- Github registry (imagen privada/publica de docker)
 
 ## 🛠️ Tecnologías Utilizadas
 - [Terraform](https://terraform.io) (Para definición de infraestructura)
@@ -102,10 +103,6 @@ echo $ARM_ACCESS_KEY
 ```
 
 **Nota**: Nunca suba las credenciales al repositorio git. Manténgalas en su archivo de configuración local.
-
-## 🚀 Próximos Repositorios (Por Agregar)
-- IaC-azure-containerapps
-- IaC-azure-postgresql
 
 ---
 **Nota**: Este README es una guía básica y debe adaptarse según las necesidades específicas del proyecto.
