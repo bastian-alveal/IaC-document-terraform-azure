@@ -1,0 +1,57 @@
+# Terraform local files
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.env
+*.backup
+*.log
+*.bak
+*.old
+crash.log
+
+# IDE files (VSCode, JetBrains, etc.)
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Submodule specific files
+IaC-azure-appservice/*.tfvars
+IaC-azure-appservice/*.tfstate
+IaC-azure-appservice/terraform.tfvars
+
+IaC-azure-bd/*.tfvars
+IaC-azure-bd/*.tfstate
+IaC-azure-bd/terraform.tfvars
+IaC-azure-bd/.env
+
+IaC-azure-blob-storage/*.tfvars
+IaC-azure-blob-storage/*.tfstate
+IaC-azure-blob-storage/terraform.tfvars
+IaC-azure-blob-storage/.env
+IaC-azure-blob-storage/terraform.tfstate
+
+IaC-azure-containerapp/*.tfvars
+IaC-azure-containerapp/*.tfstate
+IaC-azure-containerapp/terraform.tfvars
+IaC-azure-containerapp/.env
+
+IaC-azure-networks/*.tfvars
+IaC-azure-networks/*.tfstate
+IaC-azure-networks/terraform.tfvars
+IaC-azure-networks/.env
+
+# Exclude all .tfvars files except example ones
+*.tfvars
+!*.tfvars.example
+
+# Exclude all .env files
+*.env
+!*.env.example

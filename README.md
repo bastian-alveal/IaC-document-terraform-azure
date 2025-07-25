@@ -20,12 +20,15 @@ Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automa
 - [Git](https://git-scm.com) (Control de versiones)
 - Shell Scripts (Automatización)
 
-## 📦 Repositorios Disponibles
-- [IaC-azure-appservice](https://github.com/bastian-alveal/IaC-azure-appservice) - Configuración de servicios web en Azure
-- [IaC-azure-bd](https://github.com/bastian-alveal/IaC-azure-bd) - Configuración de base de datos postgresql en Azure
-- [IaC-azure-blob-storage](https://github.com/bastian-alveal/IaC-azure-blob-storage) - Configuración de almacenamiento Blob en Azure
-- [IaC-azure-networks](https://github.com/bastian-alveal/IaC-azure-networks) - Configuración de redes en Azure
-- [IaC-azure-containerapp](https://github.com/bastian-alveal/IaC-azure-containerapp) - Configuración de contenedores en Azure
+## 📦 Módulos de Infraestructura
+
+Este repositorio contiene los siguientes módulos de Terraform:
+
+- [IaC-azure-appservice](IaC-azure-appservice/) - Configuración de servicios web en Azure
+- [IaC-azure-bd](IaC-azure-bd/) - Configuración de base de datos PostgreSQL en Azure
+- [IaC-azure-blob-storage](IaC-azure-blob-storage/) - Configuración de almacenamiento Blob en Azure
+- [IaC-azure-networks](IaC-azure-networks/) - Configuración de redes en Azure
+- [IaC-azure-containerapp](IaC-azure-containerapp/) - Configuración de contenedores en Azure
 
 ## 📁 Archivos Necesarios
 ### 📝 Que deben crearse por el usuario:
@@ -48,18 +51,22 @@ ghcr_pat      = "token-git"  # con permisos de lectura de registri de github
 ```
 - este por si se requiere para servicios con uso de docker utilizar una imagen privada (usar solo local no subir a git)
 
-## 📁 Estructura de repositorios
-```
-IaC/
-├── Este mismo repositorio/
-│   └── README.md
-├── 1-IaC-azure-networks/
-├── 2-IaC-azure-appservice/
-├── 3-IaC-azure-containerapp/
-├── 4-IaC-azure-bd/
-├── 5-IaC-azureBlob/
+## 📁 Estructura del Proyecto
+
+El proyecto está organizado en varios módulos de Terraform que implementan diferentes componentes de infraestructura en Azure:
 
 ```
+IaC-document-terraform/
+├── .git/
+├── README.md
+├── IaC-azure-appservice/
+├── IaC-azure-bd/
+├── IaC-azure-blob-storage/
+├── IaC-azure-containerapp/
+└── IaC-azure-networks/
+```
+
+Cada módulo está diseñado para implementar una parte específica de la infraestructura y puede ser utilizado de forma independiente o en conjunto con otros módulos.
 
 ## 🎯 ¿Por qué usarlo?
 1. **Consistencia**: La infraestructura se mantiene igual en todos los entornos
@@ -77,7 +84,7 @@ Este proyecto utiliza Azure Blob Storage como backend para Terraform, lo que per
 3. **Seguridad**: Credenciales almacenadas de forma segura en cada equipo
 
 ### Configuración del Backend
-El repositorio [IaC-azure-blob-storage](https://github.com/bastian-alveal/IaC-azure-blob-storage) se utiliza para crear el almacenamiento Blob donde se guardará el estado de Terraform. Luego, el repositorio [IaC-azure-appservice](https://github.com/bastian-alveal/IaC-azure-appservice) y los siguientes se conectaran a este backend a través del archivo `backend.tf` configurado en cada repositorio.
+El módulo [IaC-azure-blob-storage](IaC-azure-blob-storage/) se utiliza para crear el almacenamiento Blob donde se guardará el estado de Terraform. Luego, los demás módulos se conectan a este backend a través del archivo `backend.tf` configurado en cada módulo.
 
 ### Configuración Local
 Para configurar el backend en cada equipo, siga estos pasos:
