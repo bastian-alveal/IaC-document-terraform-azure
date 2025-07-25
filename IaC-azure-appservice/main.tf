@@ -49,7 +49,7 @@ resource "azurerm_service_plan" "appserviceplan" {
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   os_type             = "Linux"
-  sku_name            = "P1v2"     # <---- PremiumV2
+  sku_name            = "P1v2"     # PremiumV2
 }
 
 resource "azurerm_linux_web_app" "webapp" {
@@ -74,6 +74,13 @@ resource "azurerm_linux_web_app" "webapp" {
     DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
     BACKEND_URL = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+  }
+
+  lifecycle {
+    ignore_changes = [
+      site_config[0].application_stack[0].docker_image,
+      site_config[0].application_stack[0].docker_image_tag
+    ]
   }
 }
 
