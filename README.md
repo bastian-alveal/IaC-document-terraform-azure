@@ -20,6 +20,7 @@ Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automa
 - [Git](https://git-scm.com) (Control de versiones)
 - Shell Scripts (Automatización)
 
+## 🛠️ Arquitectura tipo
 ![Arquitectura](pictures/arquitectura.png)
 
 ## 📦 Módulos de Infraestructura
