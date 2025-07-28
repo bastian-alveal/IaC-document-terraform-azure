@@ -1,39 +1,44 @@
-# PostgreSQL Flexible Server
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.37.0"
+    }
+  }
+}
+
+provider "azurerm" {
+  features {}
+  subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
+}
+
+# Importa solo lo necesario del proyecto de redes
+data "terraform_remote_state" "net" {
+  backend = "azurerm"
+  config = {
+    resource_group_name  = "tfstate-rg"
+    storage_account_name = "tfstatebastian01"
+    container_name       = "tfstate"
+    key                  = "networks.tfstate"
+  }
+}
+
+# PostgreSQL Flexible Server con acceso público
 resource "azurerm_postgresql_flexible_server" "db" {
   name                   = "mypg-flex"
   resource_group_name    = data.terraform_remote_state.net.outputs.rg_name
   location               = data.terraform_remote_state.net.outputs.location
   version                = "13"
-  delegated_subnet_id    = data.terraform_remote_state.net.outputs.db_subnet_id
   administrator_login    = var.db_user
   administrator_password = var.db_pass
 
   storage_mb             = 32768
-  sku_name               = "Standard_B1ms"
+  sku_name               = "B_Standard_B1ms"
 
-  # Opcional: configuraciones adicionales
-  # backup_retention_days  = 7
-  # geo_redundant_backup_enabled = false
-
-  # Usualmente, Network viene por defecto como privado al usar delegated_subnet_id
+  public_network_access_enabled = true
 }
 
-# Private Endpoint para acceso desde la VNet (Container App)
-resource "azurerm_private_endpoint" "db_pe" {
-  name                = "pe-db"
-  resource_group_name = data.terraform_remote_state.net.outputs.rg_name
-  location            = data.terraform_remote_state.net.outputs.location
-  subnet_id           = data.terraform_remote_state.net.outputs.db_subnet_id
-
-  private_service_connection {
-    name                           = "psc-db"
-    private_connection_resource_id = azurerm_postgresql_flexible_server.db.id
-    is_manual_connection           = false
-    subresource_names              = ["postgresqlServer"]
-  }
-}
-
-# Firewall: permite SOLO tu IP para administración
+# Firewall: permite SOLO tu IP
 resource "azurerm_postgresql_flexible_server_firewall_rule" "admin" {
   name             = "allow-admin"
   server_id        = azurerm_postgresql_flexible_server.db.id

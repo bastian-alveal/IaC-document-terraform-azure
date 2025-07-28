@@ -23,13 +23,14 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.102.0"
+      version = "~> 4.37.0"
     }
   }
 }
 
 provider "azurerm" {
   features {}
+  subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
 }
 
 # Log Analytics (para monitoreo)
@@ -41,16 +42,12 @@ resource "azurerm_log_analytics_workspace" "la" {
   retention_in_days   = 30
 }
 
-# Container App Environment (en subnet privada)
+# Container App Environment
 resource "azurerm_container_app_environment" "ca_env" {
   name                       = "ca-env"
   location                   = data.terraform_remote_state.net.outputs.location
   resource_group_name        = data.terraform_remote_state.net.outputs.rg_name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.la.id
-
-  vnet_configuration {
-    infrastructure_subnet_id = data.terraform_remote_state.net.outputs.containerapp_subnet
-  }
 }
 
 # Container App Backend
@@ -59,6 +56,18 @@ resource "azurerm_container_app" "backend" {
   container_app_environment_id = azurerm_container_app_environment.ca_env.id
   resource_group_name          = data.terraform_remote_state.net.outputs.rg_name
   revision_mode                = "Single"
+
+  # Secreto para el PAT de GHCR
+  secret {
+    name  = "ghcr-password"
+    value = var.ghcr_pat
+  }
+
+  registry {
+    server               = "ghcr.io"
+    username             = var.ghcr_username
+    password_secret_name = "ghcr-password"
+  }
 
   template {
     container {
@@ -71,15 +80,20 @@ resource "azurerm_container_app" "backend" {
         name  = "DB_HOST"
         value = data.terraform_remote_state.db.outputs.db_fqdn
       }
-      # Agrega otras variables de entorno necesarias
     }
+
     min_replicas = 1
     max_replicas = 2
   }
 
   ingress {
-    external_enabled = false        # Solo acceso privado
-    target_port      = 80           # Puerto del backend
+    external_enabled = false
+    target_port      = 80
+
+    traffic_weight {
+      percentage      = 100
+      latest_revision = true
+    }
   }
 
   lifecycle {
