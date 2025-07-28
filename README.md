@@ -71,6 +71,18 @@ IaC-document-terraform/
 
 Cada módulo está diseñado para implementar una parte específica de la infraestructura y puede ser utilizado de forma independiente o en conjunto con otros módulos.
 
+## 📁 Implementación del Proyecto
+
+El proyecto requiere de la siguiente orden de ejecucion para poder ser implementado
+```
+1. IaC-azure-blob-storage (y configuraciones posteriores)
+2. IaC-azure-networks
+3. IaC-azure-bd
+4. IaC-azure-{containerapps/appservices} (indiferentes del orden)
+```
+
+
+
 ## 🎯 ¿Por qué usarlo?
 1. **Consistencia**: La infraestructura se mantiene igual en todos los entornos
 2. **Versionamiento**: Cambios en la infraestructura se pueden rastrear
