@@ -57,7 +57,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
   admin_username      = "azureuser"
   admin_password      = random_password.admin_password.result
   disable_password_authentication = false
-  
+
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
@@ -70,7 +70,10 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 
-  # Instala Tailscale, pero NO ejecuta "tailscale up"
-  custom_data = base64encode(file("cloud-init.yaml"))
+  # Genera el cloud-init con el token sensible
+  custom_data = base64encode(
+    templatefile("${path.module}/cloud-init.yaml.tpl", {
+      tailscale_authkey = var.tailscale_authkey
+    })
+  )
 }
-

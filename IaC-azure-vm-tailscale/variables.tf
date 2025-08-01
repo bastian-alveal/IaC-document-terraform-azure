@@ -7,3 +7,8 @@ variable "location" {
   type        = string
   description = "Ubicación de Azure"
 }
+
+variable "tailscale_authkey" {
+  type      = string
+  sensitive = true
+}

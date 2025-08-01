@@ -15,8 +15,8 @@ runcmd:
   - echo "net.ipv6.conf.all.forwarding=1" >> /etc/sysctl.conf
   - sysctl -p
 
-  # Iniciar Tailscale y anunciar TODA la VNet
-  - tailscale up --authkey tskey-auth-kGKKkPR9fH11CNTRL-zAGcoNfHHe211MPYDA7Ae2wHcvtR8JQGi  --advertise-routes=10.10.0.0/16 --accept-dns=false
+  # Iniciar Tailscale y anunciar TODA la VNet usando variable
+  - tailscale up --authkey ${tailscale_authkey} --advertise-routes=10.10.0.0/16 --accept-dns=false
 
   # Configurar NAT para que Tailscale pueda enrutar hacia la VNet
   - iptables -t nat -A POSTROUTING -s 100.64.0.0/10 -o eth0 -j MASQUERADE

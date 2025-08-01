@@ -39,9 +39,9 @@ Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automa
 ## 🛠️ Modelo de comunicación tipo
 ![Modelo](pictures/modelo-comunicacion.png)
 
-## 📦 Módulos de Infraestructura
+## 📦 Estructura de Infraestructura
 
-Este repositorio contiene los siguientes módulos de Terraform:
+Cada módulo está diseñado para implementar una parte específica de la infraestructura y puede ser utilizado de forma independiente o en conjunto con otros módulos.
 
 <p align="center">
   <img src="https://img.shields.io/badge/App%20Service-0078D4?style=flat-square&logo=microsoft-azure&logoColor=white" alt="App Service"/>
@@ -78,23 +78,6 @@ ghcr_pat      = "token-git"  # con permisos de lectura de registri de github
 ```
 - este por si se requiere para servicios con uso de docker utilizar una imagen privada (usar solo local no subir a git)
 
-## 📁 Estructura del Proyecto
-
-El proyecto está organizado en varios módulos de Terraform que implementan diferentes componentes de infraestructura en Azure:
-
-```
-IaC-document-terraform/
-├── .git/
-├── README.md
-├── IaC-azure-appservice/
-├── IaC-azure-bd/
-├── IaC-azure-blob-storage/
-├── IaC-azure-containerapp/
-└── IaC-azure-networks/
-```
-
-Cada módulo está diseñado para implementar una parte específica de la infraestructura y puede ser utilizado de forma independiente o en conjunto con otros módulos.
-
 ## 📁 Implementación del Proyecto
 
 El proyecto requiere de la siguiente orden de ejecucion para poder ser implementado
@@ -103,6 +86,7 @@ El proyecto requiere de la siguiente orden de ejecucion para poder ser implement
 2. IaC-azure-networks
 3. IaC-azure-bd
 4. IaC-azure-{containerapps/appservices} (indiferentes del orden)
+5. IaC-azure-vm-tailscale (este ultimo para la administración de la bd por medio de vpn privada)
 ```
 
 
@@ -148,7 +132,3 @@ source ~/.zshrc
 echo $ARM_ACCESS_KEY
 ```
 
-**Nota**: Nunca suba las credenciales al repositorio git. Manténgalas en su archivo de configuración local.
-
----
-**Nota**: Este README es una guía básica y debe adaptarse según las necesidades específicas del proyecto.
