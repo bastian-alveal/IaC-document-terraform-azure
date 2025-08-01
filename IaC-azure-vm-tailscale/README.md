@@ -34,8 +34,8 @@ Este módulo Terraform implementa una máquina virtual en Azure con integración
 
 ```
 IaC-azure-vm-tailscale/
-├── backend.tf            # Configuración del backend de Terraform
-├── cloud-init.yaml       # Script de provisionamiento de la VM
+├── backend.tf           # Configuración del backend de Terraform
+├── cloud-init.yaml.tpl  # Script de provisionamiento de la VM
 ├── main.tf              # Configuración principal de Terraform
 ├── outputs.tf           # Definición de outputs
 ├── terraform.tfvars     # Variables de configuración
