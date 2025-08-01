@@ -23,6 +23,9 @@ Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automa
 ## 🛠️ Arquitectura tipo
 ![Arquitectura](pictures/arquitectura.png)
 
+## 🛠️ Modelo de comunicación tipo
+![Modelo](pictures/modelo-comunicacion.png)
+
 ## 📦 Módulos de Infraestructura
 
 Este repositorio contiene los siguientes módulos de Terraform:

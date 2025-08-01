@@ -42,12 +42,16 @@ resource "azurerm_log_analytics_workspace" "la" {
   retention_in_days   = 30
 }
 
-# Container App Environment
+# Container App Environment con VNet Injection
 resource "azurerm_container_app_environment" "ca_env" {
   name                       = "ca-env"
   location                   = data.terraform_remote_state.net.outputs.location
   resource_group_name        = data.terraform_remote_state.net.outputs.rg_name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.la.id
+
+  vnet_configuration {
+    infrastructure_subnet_id = data.terraform_remote_state.net.outputs.containerapp_subnet
+  }
 }
 
 # Container App Backend
@@ -57,7 +61,6 @@ resource "azurerm_container_app" "backend" {
   resource_group_name          = data.terraform_remote_state.net.outputs.rg_name
   revision_mode                = "Single"
 
-  # Secreto para el PAT de GHCR
   secret {
     name  = "ghcr-password"
     value = var.ghcr_pat
@@ -76,9 +79,10 @@ resource "azurerm_container_app" "backend" {
       cpu    = 0.5
       memory = "1Gi"
 
+      }
       env {
         name  = "DB_HOST"
-        value = data.terraform_remote_state.db.outputs.db_fqdn
+        value = data.terraform_remote_state.db.outputs.db_private_fqdn
       }
     }
 
@@ -87,7 +91,8 @@ resource "azurerm_container_app" "backend" {
   }
 
   ingress {
-    external_enabled = false
+    external_enabled = false    # NO se expone públicamente
+    internal_enabled = true     # Permite acceso interno desde la VNet
     target_port      = 80
 
     traffic_weight {
@@ -97,9 +102,9 @@ resource "azurerm_container_app" "backend" {
   }
 
   lifecycle {
-    # Terraform NO tocará la imagen si GitHub Actions la actualiza
     ignore_changes = [
       template[0].container[0].image
     ]
   }
 }
+

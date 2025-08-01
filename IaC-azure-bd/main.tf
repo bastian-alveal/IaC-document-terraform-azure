@@ -12,7 +12,7 @@ provider "azurerm" {
   subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
 }
 
-# Importa solo lo necesario del proyecto de redes
+# Estado remoto de networks
 data "terraform_remote_state" "net" {
   backend = "azurerm"
   config = {
@@ -23,7 +23,7 @@ data "terraform_remote_state" "net" {
   }
 }
 
-# PostgreSQL Flexible Server con acceso público
+# Servidor PostgreSQL Flexible (Privado)
 resource "azurerm_postgresql_flexible_server" "db" {
   name                   = "mypg-flex"
   resource_group_name    = data.terraform_remote_state.net.outputs.rg_name
@@ -35,13 +35,48 @@ resource "azurerm_postgresql_flexible_server" "db" {
   storage_mb             = 32768
   sku_name               = "B_Standard_B1ms"
 
-  public_network_access_enabled = true
+  # Desactivar acceso público
+  public_network_access_enabled = false
+
+  lifecycle {
+    ignore_changes = [zone]
+  }
 }
 
-# Firewall: permite SOLO tu IP
-resource "azurerm_postgresql_flexible_server_firewall_rule" "admin" {
-  name             = "allow-admin"
-  server_id        = azurerm_postgresql_flexible_server.db.id
-  start_ip_address = var.admin_ip
-  end_ip_address   = var.admin_ip
+# Private DNS Zone para PostgreSQL
+resource "azurerm_private_dns_zone" "postgres_dns" {
+  name                = "privatelink.postgres.database.azure.com"
+  resource_group_name = data.terraform_remote_state.net.outputs.rg_name
+}
+
+# Enlace entre la VNet y la zona DNS privada
+resource "azurerm_private_dns_zone_virtual_network_link" "postgres_dns_link" {
+  name                  = "postgres-dns-link"
+  resource_group_name   = data.terraform_remote_state.net.outputs.rg_name
+  private_dns_zone_name = azurerm_private_dns_zone.postgres_dns.name
+  virtual_network_id    = data.terraform_remote_state.net.outputs.vnet_id
+}
+
+# Private Endpoint para PostgreSQL
+resource "azurerm_private_endpoint" "db_private_endpoint" {
+  name                = "pe-mypg-flex"
+  location            = data.terraform_remote_state.net.outputs.location
+  resource_group_name = data.terraform_remote_state.net.outputs.rg_name
+  subnet_id           = data.terraform_remote_state.net.outputs.db_subnet
+
+  private_service_connection {
+    name                           = "psc-mypg-flex"
+    private_connection_resource_id = azurerm_postgresql_flexible_server.db.id
+    is_manual_connection           = false
+    subresource_names              = ["postgresqlServer"]
+  }
+}
+
+# Asociar el Private Endpoint con la zona DNS privada
+resource "azurerm_private_dns_a_record" "postgres_private_record" {
+  name                = azurerm_postgresql_flexible_server.db.name
+  zone_name           = azurerm_private_dns_zone.postgres_dns.name
+  resource_group_name = data.terraform_remote_state.net.outputs.rg_name
+  ttl                 = 300
+  records             = [azurerm_private_endpoint.db_private_endpoint.private_service_connection[0].private_ip_address]
 }

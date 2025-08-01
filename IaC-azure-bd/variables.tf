@@ -1,3 +1,10 @@
-variable "db_user"  { type = string }
-variable "db_pass"  { type = string }
-variable "admin_ip" { type = string }  # IP para acceso temporal (admin)
+variable "db_user" {
+  type        = string
+  description = "Usuario administrador de PostgreSQL Flexible"
+}
+
+variable "db_pass" {
+  type        = string
+  description = "Password del usuario administrador de PostgreSQL Flexible"
+  sensitive   = true
+}
