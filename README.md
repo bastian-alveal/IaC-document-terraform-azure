@@ -1,8 +1,10 @@
 # Terraform para Infraestructura como Código (IaC)
 
-[![Terraform](https://img.shields.io/badge/terraform-20232a.svg?style=for-the-badge&logo=terraform&logoColor=6298ff)](https://terraform.io)
-[![Azure](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://azure.microsoft.com)
-
+<p align="center">
+  <img src="https://img.shields.io/badge/terraform-20232a.svg?style=for-the-badge&logo=terraform&logoColor=6298ff" alt="Terraform"/>
+  <img src="https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white" alt="Azure"/>
+  <img src="https://img.shields.io/badge/Cloud%20Native-000000?style=for-the-badge&logo=cloudnative&logoColor=white" alt="Cloud Native"/>
+</p>
 
 ## 🚀 ¿Qué es esto?
 Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automatizar la configuración de infraestructura en Azure. La idea es mantener la infraestructura en archivos de configuración en lugar de configurar manualmente recursos.
@@ -13,12 +15,23 @@ Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automa
 - Suscripción a Azure con permisos apropiados
 - Credenciales de Azure configuradas
 - Github registry (imagen privada/publica de docker)
+- Cuenta en Tailscale
 
 ## 🛠️ Tecnologías Utilizadas
-- [Terraform](https://terraform.io) (Para definición de infraestructura)
-- [Azure CLI](https://docs.microsoft.com/cli/azure) (Para interacción con Azure)
-- [Git](https://git-scm.com) (Control de versiones)
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Terraform-20232a?style=flat-square&logo=terraform&logoColor=6298ff" alt="Terraform"/>
+  <img src="https://img.shields.io/badge/Azure%20CLI-0078D4?style=flat-square&logo=azure&logoColor=white" alt="Azure CLI"/>
+  <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white" alt="Git"/>
+  <img src="https://img.shields.io/badge/Shell%20Scripts-121011?style=flat-square&logo=gnu-bash&logoColor=white" alt="Shell Scripts"/>
+  <img src="https://img.shields.io/badge/Tailscale-000000?style=flat-square&logo=tailscale&logoColor=white" alt="Tailscale"/>
+</p>
+
+- Terraform (Para definición de infraestructura)
+- Azure CLI (Para interacción con Azure)
+- Git (Control de versiones)
 - Shell Scripts (Automatización)
+- Tailscale (para acceso privado y cifrado a instancias de SQL/containerapps)
 
 ## 🛠️ Arquitectura tipo
 ![Arquitectura](pictures/arquitectura.png)
@@ -29,6 +42,14 @@ Este proyecto utiliza Infraestructura como Código (IaC) para gestionar y automa
 ## 📦 Módulos de Infraestructura
 
 Este repositorio contiene los siguientes módulos de Terraform:
+
+<p align="center">
+  <img src="https://img.shields.io/badge/App%20Service-0078D4?style=flat-square&logo=microsoft-azure&logoColor=white" alt="App Service"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Blob%20Storage-0078D4?style=flat-square&logo=microsoft-azure&logoColor=white" alt="Blob Storage"/>
+  <img src="https://img.shields.io/badge/Networks-0078D4?style=flat-square&logo=microsoft-azure&logoColor=white" alt="Networks"/>
+  <img src="https://img.shields.io/badge/Container%20Apps-0078D4?style=flat-square&logo=microsoft-azure&logoColor=white" alt="Container Apps"/>
+</p>
 
 - [IaC-azure-appservice](IaC-azure-appservice/) - Configuración de servicios web en Azure
 - [IaC-azure-bd](IaC-azure-bd/) - Configuración de base de datos PostgreSQL en Azure
