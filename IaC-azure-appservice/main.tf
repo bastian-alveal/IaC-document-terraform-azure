@@ -5,10 +5,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.102.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.7.2"
-    }
   }
 }
 
@@ -37,23 +33,9 @@ data "terraform_remote_state" "ca" {
   }
 }
 
-variable "ghcr_username" {
-  type = string
-}
-
-variable "ghcr_pat" {
-  type      = string
-  sensitive = true
-}
-
-resource "random_integer" "ri" {
-  min = 10000
-  max = 99999
-}
-
 # App Service Plan
 resource "azurerm_service_plan" "appserviceplan" {
-  name                = "webapp-asp-${random_integer.ri.result}"
+  name                = var.service_plan_name
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   os_type             = "Linux"
@@ -62,7 +44,7 @@ resource "azurerm_service_plan" "appserviceplan" {
 
 # Web App con Docker (v3.x)
 resource "azurerm_linux_web_app" "webapp" {
-  name                = "webapp-${random_integer.ri.result}"
+  name                = var.appservice_name
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   service_plan_id     = azurerm_service_plan.appserviceplan.id
