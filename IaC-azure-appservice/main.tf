@@ -1,11 +1,18 @@
 terraform {
   required_version = ">= 1.5.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.102.0"
+      version = "~> 4.37.0" # ya es 4.x compatible con application_stack.docker
     }
   }
+}
+
+resource "random_string" "suffix" {
+  length  = 6
+  upper   = false
+  special = false
 }
 
 provider "azurerm" {
@@ -42,40 +49,36 @@ resource "azurerm_service_plan" "appserviceplan" {
   sku_name            = "P1v2"
 }
 
-# Web App con Docker (v3.x)
+# Web App
 resource "azurerm_linux_web_app" "webapp" {
-  name                = var.appservice_name
+  name = "webapp-prod-${random_string.suffix.result}"
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   service_plan_id     = azurerm_service_plan.appserviceplan.id
-  https_only          = true
 
   site_config {
     always_on = true
 
     application_stack {
-      docker_image     = "ghcr.io/bastian-alveal/node-vite/vite-react"
-      docker_image_tag = "0.0.9"
+      docker_image_name        = "ghcr.io/bastian-alveal/node-vite/vite-react:0.0.9"
+      docker_registry_url      = "https://ghcr.io"
+      docker_registry_username = var.ghcr_username
+      docker_registry_password = var.ghcr_pat
     }
   }
 
   app_settings = {
-    DOCKER_REGISTRY_SERVER_URL          = "https://ghcr.io"
-    DOCKER_REGISTRY_SERVER_USERNAME     = var.ghcr_username
-    DOCKER_REGISTRY_SERVER_PASSWORD     = var.ghcr_pat
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
-    BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+    BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_internal_fqdn
   }
 
-  lifecycle {
-    ignore_changes = [
-      site_config[0].application_stack[0].docker_image,
-      site_config[0].application_stack[0].docker_image_tag
-    ]
+  identity {
+    type = "SystemAssigned"
   }
 }
 
-# Integración App Service <-> VNet privada
+
+# Integración App Service con VNet
 resource "azurerm_app_service_virtual_network_swift_connection" "integration" {
   app_service_id = azurerm_linux_web_app.webapp.id
   subnet_id      = data.terraform_remote_state.net.outputs.appservice_subnet

@@ -26,36 +26,22 @@ resource "azurerm_virtual_network" "vnet" {
   address_space       = ["10.10.0.0/16"]
 }
 
-# Subnet para App Service (delegada)
+# Subnet para App Service 
 resource "azurerm_subnet" "appservice" {
   name                 = "snet-appservice"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.10.1.0/24"]
 
-  delegation {
-    name = "delegation-appservice"
-    service_delegation {
-      name    = "Microsoft.Web/serverFarms"
-      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
-    }
-  }
 }
 
-# Subnet para Container Apps (delegada)
+# Subnet para Container Apps 
 resource "azurerm_subnet" "containerapp" {
   name                 = "snet-containerapp"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.10.2.0/24"]
+  address_prefixes     = ["10.10.6.0/23"]
 
-  delegation {
-    name = "delegation-containerapp"
-    service_delegation {
-      name    = "Microsoft.App/environments"
-      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
-    }
-  }
 }
 
 # Subnet para BD (con private endpoint)
