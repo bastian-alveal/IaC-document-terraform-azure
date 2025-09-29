@@ -1,50 +1,74 @@
-name: Terraform CI/CD
+name: Terraform CI/CD v2
 
 on:
-  workflow_dispatch:   # Se ejecuta solo manualmente
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Acción a ejecutar: deploy o destroy"
+        required: true
+        default: "deploy"
+        type: choice
+        options: [deploy, destroy]
+      target_module:
+        description: "Módulo a ejecutar (o all para todos)"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - blob
+          - network
+          - bd
+          - containerapp
+          - appservice
+          - vm-test-red-bd
+          - vm-tailscale
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  # ---------------------- BLOB ----------------------
   blob:
-    name: Deploy Blob Storage
+    name: Blob Storage
     runs-on: ubuntu-latest
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'blob')) ||
+      (github.event.inputs.action == 'destroy' &&
+       (github.event.inputs.target_module == 'blob'))
     environment: blob-approval
     defaults:
       run:
         working-directory: IaC-azure-blob-storage
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Azure Login
-        uses: azure/login@v2
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+          creds: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
+      - run: terraform init
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
 
-      - name: Terraform Init
-        run: terraform init
-
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
-
+  # ---------------------- NETWORK ----------------------
   network:
-    name: Deploy Network
+    name: Network
     runs-on: ubuntu-latest
     needs: blob
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'network')) ||
+      (github.event.inputs.action == 'destroy' &&
+       (github.event.inputs.target_module == 'network'))
     environment: network-approval
     defaults:
       run:
@@ -53,21 +77,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          creds: ${{ secrets.AZURE_CLIENT_SECRET }}
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
       - run: terraform init
-      - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve tfplan
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
 
+  # ---------------------- DATABASE ----------------------
   bd:
-    name: Deploy Database
+    name: Database
     runs-on: ubuntu-latest
     needs: network
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'bd')) ||
+      (github.event.inputs.action == 'destroy' &&
+       (github.event.inputs.target_module == 'bd' || github.event.inputs.target_module == 'all'))
     environment: bd-approval
     defaults:
       run:
@@ -76,21 +108,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          creds: ${{ secrets.AZURE_CLIENT_SECRET }}
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
       - run: terraform init
-      - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve tfplan
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
 
+  # ---------------------- CONTAINER APP ----------------------
   containerapp:
-    name: Deploy Container App
+    name: Container App
     runs-on: ubuntu-latest
     needs: bd
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'containerapp')) ||
+      (github.event.inputs.action == 'destroy' &&
+       (github.event.inputs.target_module == 'containerapp' || github.event.inputs.target_module == 'all'))
     environment: container-approval
     defaults:
       run:
@@ -99,21 +139,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          creds: ${{ secrets.AZURE_CLIENT_SECRET }}
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
       - run: terraform init
-      - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve tfplan
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
 
+  # ---------------------- APP SERVICE ----------------------
   appservice:
-    name: Deploy App Service
+    name: App Service
     runs-on: ubuntu-latest
     needs: containerapp
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'appservice')) ||
+      (github.event.inputs.action == 'destroy' &&
+       (github.event.inputs.target_module == 'appservice' || github.event.inputs.target_module == 'all'))
     environment: appservice-approval
     defaults:
       run:
@@ -122,21 +170,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          creds: ${{ secrets.AZURE_CLIENT_SECRET }}
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
       - run: terraform init
-      - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve tfplan
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
 
+  # ---------------------- VM TEST RED BD ----------------------
   vm-test-red-bd:
-    name: Deploy VM Test Red BD
+    name: VM Test Red BD
     runs-on: ubuntu-latest
     needs: appservice
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-test-red-bd')) ||
+      (github.event.inputs.action == 'destroy' &&
+       (github.event.inputs.target_module == 'vm-test-red-bd' || github.event.inputs.target_module == 'all'))
     environment: vm-test-red-bd-approval
     defaults:
       run:
@@ -145,21 +201,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          creds: ${{ secrets.AZURE_CLIENT_SECRET }}
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
       - run: terraform init
-      - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve tfplan
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
 
+  # ---------------------- VM TAILSCALE ----------------------
   vm-tailscale:
-    name: Deploy VM with Tailscale
+    name: VM Tailscale
     runs-on: ubuntu-latest
     needs: vm-test-red-bd
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-tailscale')) ||
+      (github.event.inputs.action == 'destroy' &&
+       (github.event.inputs.target_module == 'vm-tailscale' || github.event.inputs.target_module == 'all'))
     environment: vmtailscale-approval
     defaults:
       run:
@@ -168,13 +232,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          creds: ${{ secrets.AZURE_CLIENT_SECRET }}
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
       - run: terraform init
-      - run: terraform plan -out=tfplan
-      - run: terraform apply -auto-approve tfplan
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
