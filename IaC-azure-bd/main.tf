@@ -25,7 +25,7 @@ data "terraform_remote_state" "net" {
 
 # Servidor PostgreSQL Flexible (Privado)
 resource "azurerm_postgresql_flexible_server" "db" {
-  name                   = "mypg-flex"
+  name                   = "mybd-test-rick-pss"
   resource_group_name    = data.terraform_remote_state.net.outputs.rg_name
   location               = data.terraform_remote_state.net.outputs.location
   version                = "13"
@@ -33,7 +33,7 @@ resource "azurerm_postgresql_flexible_server" "db" {
   administrator_password = var.db_pass
 
   storage_mb             = 32768
-  sku_name               = "B_Standard_B1ms"
+  sku_name               = "Standard_B1ms"
 
   # Desactivar acceso público
   public_network_access_enabled = false
