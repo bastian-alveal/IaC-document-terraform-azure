@@ -33,7 +33,7 @@ resource "azurerm_postgresql_flexible_server" "db" {
   administrator_password = var.db_pass
 
   storage_mb             = 32768
-  sku_name               = "B_Standard_B1ms"
+  sku_name               = "Standard_B1ms"
 
   # Desactivar acceso público
   public_network_access_enabled = false
