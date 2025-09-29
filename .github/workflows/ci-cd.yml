@@ -1,4 +1,4 @@
-name: Terraform CI/CD
+name: Terraform CI/CD v2
 
 on:
   workflow_dispatch:
