@@ -57,12 +57,20 @@ resource "azurerm_subnet" "containerapp" {
   }
 }
 
-# Subnet para BD (con private endpoint)
+# Subnet para BD (con private endpoint + delegación para PostgreSQL Flexible)
 resource "azurerm_subnet" "db" {
   name                 = "snet-db"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.10.3.0/24"]
+
+  delegation {
+    name = "delegation-postgres"
+    service_delegation {
+      name    = "Microsoft.DBforPostgreSQL/flexibleServers"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
+  }
 }
 
 # Subnet para VM de administración (Tailscale)
