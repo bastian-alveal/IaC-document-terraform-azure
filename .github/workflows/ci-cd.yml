@@ -63,7 +63,6 @@ jobs:
   network:
     name: Network
     runs-on: ubuntu-latest
-    needs: blob
     if: >
       (github.event.inputs.action == 'deploy' &&
        (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'network')) ||
@@ -94,12 +93,11 @@ jobs:
   bd:
     name: Database
     runs-on: ubuntu-latest
-    needs: network
     if: >
       (github.event.inputs.action == 'deploy' &&
        (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'bd')) ||
       (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'bd' || github.event.inputs.target_module == 'all'))
+       (github.event.inputs.target_module == 'bd'))
     environment: bd-approval
     defaults:
       run:
@@ -125,12 +123,11 @@ jobs:
   containerapp:
     name: Container App
     runs-on: ubuntu-latest
-    needs: bd
     if: >
       (github.event.inputs.action == 'deploy' &&
        (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'containerapp')) ||
       (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'containerapp' || github.event.inputs.target_module == 'all'))
+       (github.event.inputs.target_module == 'containerapp'))
     environment: container-approval
     defaults:
       run:
@@ -156,12 +153,11 @@ jobs:
   appservice:
     name: App Service
     runs-on: ubuntu-latest
-    needs: containerapp
     if: >
       (github.event.inputs.action == 'deploy' &&
        (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'appservice')) ||
       (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'appservice' || github.event.inputs.target_module == 'all'))
+       (github.event.inputs.target_module == 'appservice'))
     environment: appservice-approval
     defaults:
       run:
@@ -187,12 +183,11 @@ jobs:
   vm-test-red-bd:
     name: VM Test Red BD
     runs-on: ubuntu-latest
-    needs: appservice
     if: >
       (github.event.inputs.action == 'deploy' &&
        (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-test-red-bd')) ||
       (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'vm-test-red-bd' || github.event.inputs.target_module == 'all'))
+       (github.event.inputs.target_module == 'vm-test-red-bd'))
     environment: vm-test-red-bd-approval
     defaults:
       run:
@@ -218,12 +213,11 @@ jobs:
   vm-tailscale:
     name: VM Tailscale
     runs-on: ubuntu-latest
-    needs: vm-test-red-bd
     if: >
       (github.event.inputs.action == 'deploy' &&
        (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-tailscale')) ||
       (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'vm-tailscale' || github.event.inputs.target_module == 'all'))
+       (github.event.inputs.target_module == 'vm-tailscale'))
     environment: vmtailscale-approval
     defaults:
       run:
