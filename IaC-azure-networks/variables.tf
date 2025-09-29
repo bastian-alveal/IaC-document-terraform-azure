@@ -1,2 +1,11 @@
-variable "rg_name"  { type = string }
-variable "location" { type = string }
+variable "rg_name" {
+  description = "Nombre del Resource Group"
+  type        = string
+  default     = "rg-network-iac"
+}
+
+variable "location" {
+  description = "Región de Azure"
+  type        = string
+  default     = "eastus"
+}
