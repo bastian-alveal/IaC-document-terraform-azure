@@ -60,39 +60,39 @@ jobs:
           fi
 
   # ---------------------- NETWORK ----------------------
-network:
-  name: Network
-  runs-on: ubuntu-latest
-  if: >
-    (github.event.inputs.action == 'deploy' &&
-     (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'network')) ||
-    (github.event.inputs.action == 'destroy' &&
-     (github.event.inputs.target_module == 'network'))
-  environment: network-approval
-  defaults:
-    run:
-      working-directory: IaC-azure-networks
-  steps:
-    - uses: actions/checkout@v4
-    - uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-    - uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.5.7
-    - run: terraform init
-      env:
-        ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
-        ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
-        ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
-        ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
-    - run: |
-        if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
-          terraform plan -out=tfplan
-          terraform apply -auto-approve tfplan
-        else
-          terraform destroy -auto-approve
-        fi
+  network:
+    name: Network
+    runs-on: ubuntu-latest
+    if: >
+      (github.event.inputs.action == 'deploy' &&
+      (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'network')) ||
+      (github.event.inputs.action == 'destroy' &&
+      (github.event.inputs.target_module == 'network'))
+    environment: network-approval
+    defaults:
+      run:
+        working-directory: IaC-azure-networks
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      - run: terraform init
+        env:
+          ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
+          ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
+          ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
+      - run: |
+          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+            terraform plan -out=tfplan
+            terraform apply -auto-approve tfplan
+          else
+            terraform destroy -auto-approve
+          fi
 
   # ---------------------- DATABASE ----------------------
   bd:
