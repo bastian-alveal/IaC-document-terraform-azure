@@ -16,13 +16,12 @@ on:
         type: choice
         options:
           - all
-          - blob
           - network
           - bd
           - containerapp
-          - appservice
-          - vm-test-red-bd
-          - vm-tailscale
+          # - appservice
+          # - vm-test-red-bd
+          # - vm-tailscale
 
 permissions:
   id-token: write
@@ -114,11 +113,9 @@ jobs:
         working-directory: IaC-azure-bd
     steps:
       - uses: actions/checkout@v4
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
@@ -166,37 +163,14 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
-      - run: terraform init
-      - run: |
-          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
-            terraform plan -out=tfplan
-            terraform apply -auto-approve tfplan
-          else
-            terraform destroy -auto-approve
-          fi
 
-  # ---------------------- APP SERVICE ----------------------
-  appservice:
-    name: App Service
-    runs-on: ubuntu-latest
-    if: >
-      (github.event.inputs.action == 'deploy' &&
-       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'appservice')) ||
-      (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'appservice'))
-    environment: appservice-approval
-    defaults:
-      run:
-        working-directory: IaC-azure-appservice
-    steps:
-      - uses: actions/checkout@v4
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.5.7
       - run: terraform init
+        env:
+          ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
+          ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
+          ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
+
       - run: |
           if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
             terraform plan -out=tfplan
@@ -204,63 +178,97 @@ jobs:
           else
             terraform destroy -auto-approve
           fi
+        env:
+          ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
+          ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
+          ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
+  # ---------------------- APP SERVICE ----------------------
+  # appservice:
+  #   name: App Service
+  #   runs-on: ubuntu-latest
+  #   if: >
+  #     (github.event.inputs.action == 'deploy' &&
+  #      (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'appservice')) ||
+  #     (github.event.inputs.action == 'destroy' &&
+  #      (github.event.inputs.target_module == 'appservice'))
+  #   environment: appservice-approval
+  #   defaults:
+  #     run:
+  #       working-directory: IaC-azure-appservice
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: azure/login@v2
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #     - uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: 1.5.7
+  #     - run: terraform init
+  #     - run: |
+  #         if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+  #           terraform plan -out=tfplan
+  #           terraform apply -auto-approve tfplan
+  #         else
+  #           terraform destroy -auto-approve
+  #         fi
 
   # ---------------------- VM TEST RED BD ----------------------
-  vm-test-red-bd:
-    name: VM Test Red BD
-    runs-on: ubuntu-latest
-    if: >
-      (github.event.inputs.action == 'deploy' &&
-       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-test-red-bd')) ||
-      (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'vm-test-red-bd'))
-    environment: vm-test-red-bd-approval
-    defaults:
-      run:
-        working-directory: IaC-azure-vm-test-red-bd
-    steps:
-      - uses: actions/checkout@v4
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.5.7
-      - run: terraform init
-      - run: |
-          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
-            terraform plan -out=tfplan
-            terraform apply -auto-approve tfplan
-          else
-            terraform destroy -auto-approve
-          fi
+  # vm-test-red-bd:
+  #   name: VM Test Red BD
+  #   runs-on: ubuntu-latest
+  #   if: >
+  #     (github.event.inputs.action == 'deploy' &&
+  #      (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-test-red-bd')) ||
+  #     (github.event.inputs.action == 'destroy' &&
+  #      (github.event.inputs.target_module == 'vm-test-red-bd'))
+  #   environment: vm-test-red-bd-approval
+  #   defaults:
+  #     run:
+  #       working-directory: IaC-azure-vm-test-red-bd
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: azure/login@v2
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #     - uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: 1.5.7
+  #     - run: terraform init
+  #     - run: |
+  #         if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+  #           terraform plan -out=tfplan
+  #           terraform apply -auto-approve tfplan
+  #         else
+  #           terraform destroy -auto-approve
+  #         fi
 
   # ---------------------- VM TAILSCALE ----------------------
-  vm-tailscale:
-    name: VM Tailscale
-    runs-on: ubuntu-latest
-    if: >
-      (github.event.inputs.action == 'deploy' &&
-       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-tailscale')) ||
-      (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'vm-tailscale'))
-    environment: vmtailscale-approval
-    defaults:
-      run:
-        working-directory: IaC-azure-vm-tailscale
-    steps:
-      - uses: actions/checkout@v4
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.5.7
-      - run: terraform init
-      - run: |
-          if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
-            terraform plan -out=tfplan
-            terraform apply -auto-approve tfplan
-          else
-            terraform destroy -auto-approve
-          fi
+  # vm-tailscale:
+  #   name: VM Tailscale
+  #   runs-on: ubuntu-latest
+  #   if: >
+  #     (github.event.inputs.action == 'deploy' &&
+  #      (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'vm-tailscale')) ||
+  #     (github.event.inputs.action == 'destroy' &&
+  #      (github.event.inputs.target_module == 'vm-tailscale'))
+  #   environment: vmtailscale-approval
+  #   defaults:
+  #     run:
+  #       working-directory: IaC-azure-vm-tailscale
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: azure/login@v2
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+  #     - uses: hashicorp/setup-terraform@v3
+  #       with:
+  #         terraform_version: 1.5.7
+  #     - run: terraform init
+  #     - run: |
+  #         if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+  #           terraform plan -out=tfplan
+  #           terraform apply -auto-approve tfplan
+  #         else
+  #           terraform destroy -auto-approve
+  #         fi
