@@ -41,8 +41,10 @@ resource "azurerm_subnet" "containerapp" {
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.10.6.0/23"]
-
+  # 👆 sin delegation aquí
 }
+
+
 
 # Subnet para BD (con private endpoint)
 resource "azurerm_subnet" "db" {
