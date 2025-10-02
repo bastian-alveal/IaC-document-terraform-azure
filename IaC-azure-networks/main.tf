@@ -46,7 +46,7 @@ resource "azurerm_subnet" "containerapp" {
   name                 = "snet-containerapp"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.10.2.0/24"]
+  address_prefixes     = ["10.10.6.0/23"]
 
   delegation {
     name = "delegation-containerapp"
