@@ -38,15 +38,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "postgres_dns_link" {
 
 # Servidor PostgreSQL Flexible (privado con subnet delegada y DNS zone)
 resource "azurerm_postgresql_flexible_server" "db" {
-  name                   = "mypg-flex2"
+  name                   = "mypg-flex5"
   resource_group_name    = data.terraform_remote_state.net.outputs.rg_name
   location               = data.terraform_remote_state.net.outputs.location
-  version                = "13"
+  version                = "16"
   administrator_login    = var.db_user
   administrator_password = var.db_pass
 
   storage_mb          = 32768
-  sku_name            = "B_Standard_B1ms"
+  sku_name            = "GP_Standard_D2ds_v4"
 
   delegated_subnet_id = data.terraform_remote_state.net.outputs.db_subnet
   private_dns_zone_id = azurerm_private_dns_zone.postgres_dns.id

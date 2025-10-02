@@ -1,0 +1,21 @@
+
+# ejecutar esto en cada terminal local para correcta autennticacion con blobstorage desde local
+export ARM_ACCESS_KEY=$(az storage account keys list \
+  --resource-group tfstate-rg \
+  --account-name tfstatebastian01 \
+  --query '[0].value' -o tsv)
+
+# actualizar imagen a usar desde la CLI de az
+az containerapp update \
+  --name backend-containerapp \
+  --resource-group rg-network-iac \
+  --image ghcr.io/bastian-alveal/api-backen-test/back:1.0
+
+# Logs en tiempo real del container
+az containerapp logs show \
+  --name backend-containerapp \
+  --resource-group rg-network-iac \
+  --follow
+
+# para ejecutar todo sobre el mismo repo a iniciar/levatar
+terraform init && terraform apply --auto-approve
