@@ -1,21 +1,15 @@
-# FQDN privado del PostgreSQL
-output "db_private_fqdn" {
+output "db_fqdn" {
   value       = azurerm_postgresql_flexible_server.db.fqdn
-  description = "FQDN privado del servidor PostgreSQL (resoluble en la VNet)"
+  description = "FQDN privado de la base de datos"
 }
 
 output "db_user" {
   value       = azurerm_postgresql_flexible_server.db.administrator_login
-  description = "Usuario administrador de la BD"
+  description = "Usuario administrador de la base de datos"
 }
 
 output "db_pass" {
   value       = var.db_pass
-  description = "Password administrador de la BD"
+  description = "Password del admin (sensible)"
   sensitive   = true
-}
-
-output "db_private_ip" {
-  value       = azurerm_private_endpoint.db_private_endpoint.private_service_connection[0].private_ip_address
-  description = "IP privada del Private Endpoint de la BD"
 }

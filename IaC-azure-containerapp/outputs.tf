@@ -1,10 +1,16 @@
-# Outputs
-output "containerapp_internal_fqdn" {
-  value       = azurerm_container_app.backend.latest_revision_fqdn
-  description = "FQDN interno del backend para acceso desde App Service"
+output "db_fqdn" {
+  value = data.terraform_remote_state.db.outputs.db_fqdn
 }
 
-output "containerapp_environment_id" {
-  value       = azurerm_container_app_environment.ca_env.id
-  description = "ID del Container App Environment"
+# Usuario administrador
+output "db_user" {
+  description = "Usuario administrador del servidor PostgreSQL"
+  value       = data.terraform_remote_state.db.outputs.db_user
+}
+
+# Password administrador (sensible)
+output "db_pass" {
+  description = "Password administrador del servidor PostgreSQL"
+  value       = data.terraform_remote_state.db.outputs.db_pass
+  sensitive   = true
 }
