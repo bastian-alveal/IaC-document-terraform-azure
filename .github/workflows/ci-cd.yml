@@ -155,28 +155,44 @@ jobs:
     defaults:
       run:
         working-directory: IaC-azure-containerapp
+
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/login@v2
+
+      - name: Login to Azure
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - uses: hashicorp/setup-terraform@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
 
-      - run: terraform init
+      - name: Terraform Init
+        run: terraform init
         env:
           ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
           ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
           ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
           ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
 
-      - run: |
+      - name: Terraform Plan & Apply
+        run: |
           if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
-            terraform plan -out=tfplan
+            terraform plan -out=tfplan \
+              -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
+              -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
+              -var="container_image=${{ secrets.CONTAINER_IMAGE }}" \
+              -var="container_image_tag=${{ secrets.CONTAINER_IMAGE_TAG }}"
+
             terraform apply -auto-approve tfplan
           else
-            terraform destroy -auto-approve
+            terraform destroy -auto-approve \
+              -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
+              -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
+              -var="container_image=${{ secrets.CONTAINER_IMAGE }}" \
+              -var="container_image_tag=${{ secrets.CONTAINER_IMAGE_TAG }}"
           fi
         env:
           ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
