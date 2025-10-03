@@ -51,7 +51,8 @@ resource "azurerm_service_plan" "appserviceplan" {
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   os_type             = "Linux"
-  sku_name            = "P1v2"
+  #sku_name            = "P1v2"
+  sku_name            = "B1"
 }
 
 # Web App con Docker (App Service)
