@@ -206,21 +206,24 @@ jobs:
     runs-on: ubuntu-latest
     if: >
       (github.event.inputs.action == 'deploy' &&
-       (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'appservice')) ||
+      (github.event.inputs.target_module == 'all' || github.event.inputs.target_module == 'appservice')) ||
       (github.event.inputs.action == 'destroy' &&
-       (github.event.inputs.target_module == 'appservice'))
+      (github.event.inputs.target_module == 'appservice'))
     environment: appservice-approval
     defaults:
       run:
         working-directory: IaC-azure-appservice
     steps:
       - uses: actions/checkout@v4
+
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
+
       - run: terraform init
         env:
           ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
@@ -232,13 +235,17 @@ jobs:
           if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
             terraform plan -out=tfplan \
               -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
-              -var="ghcr_pat=${{ secrets.GHCR_PAT }}"
+              -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
+              -var="app_image=${{ secrets.APP_IMAGE }}" \
+              -var="app_image_tag=${{ secrets.APP_IMAGE_TAG }}"
 
             terraform apply -auto-approve tfplan
           else
             terraform destroy -auto-approve \
               -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
-              -var="ghcr_pat=${{ secrets.GHCR_PAT }}"
+              -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
+              -var="app_image=${{ secrets.APP_IMAGE }}" \
+              -var="app_image_tag=${{ secrets.APP_IMAGE_TAG }}"
           fi
         env:
           ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
