@@ -17,6 +17,7 @@ provider "azurerm" {
   subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
 }
 
+# Estado remoto de red
 data "terraform_remote_state" "net" {
   backend = "azurerm"
   config = {
@@ -27,6 +28,7 @@ data "terraform_remote_state" "net" {
   }
 }
 
+# Estado remoto del container app (para obtener el backend FQDN)
 data "terraform_remote_state" "ca" {
   backend = "azurerm"
   config = {
@@ -37,15 +39,7 @@ data "terraform_remote_state" "ca" {
   }
 }
 
-variable "ghcr_username" {
-  type = string
-}
-
-variable "ghcr_pat" {
-  type      = string
-  sensitive = true
-}
-
+# Random para nombre único
 resource "random_integer" "ri" {
   min = 10000
   max = 99999
@@ -60,7 +54,7 @@ resource "azurerm_service_plan" "appserviceplan" {
   sku_name            = "P1v2"
 }
 
-# Web App con Docker (v3.x)
+# Web App con Docker (App Service)
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
@@ -72,8 +66,8 @@ resource "azurerm_linux_web_app" "webapp" {
     always_on = true
 
     application_stack {
-      docker_image     = "ghcr.io/bastian-alveal/node-vite/vite-react"
-      docker_image_tag = "0.0.9"
+      docker_image     = var.app_image
+      docker_image_tag = var.app_image_tag
     }
   }
 
@@ -82,7 +76,9 @@ resource "azurerm_linux_web_app" "webapp" {
     DOCKER_REGISTRY_SERVER_USERNAME     = var.ghcr_username
     DOCKER_REGISTRY_SERVER_PASSWORD     = var.ghcr_pat
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
-    BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+
+    # Variable para que el front sepa a dónde pegar
+    BACKEND_URL = data.terraform_remote_state.ca.outputs.containerapp_fqdn
   }
 
   lifecycle {

@@ -14,3 +14,8 @@ output "db_pass" {
   value       = data.terraform_remote_state.db.outputs.db_pass
   sensitive   = true
 }
+
+output "containerapp_fqdn" {
+  value       = azurerm_container_app.backend.latest_revision_fqdn
+  description = "FQDN interno del Container App"
+}
