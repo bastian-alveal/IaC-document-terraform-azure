@@ -1,9 +1,10 @@
 terraform {
-  required_version = ">= 1.5.0"
+  required_version = ">= 1.6.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.102.0"
+      version = ">= 4.11.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -39,7 +40,7 @@ data "terraform_remote_state" "ca" {
   }
 }
 
-# Random para nombre único
+# Random para nombres únicos
 resource "random_integer" "ri" {
   min = 10000
   max = 99999
@@ -51,11 +52,10 @@ resource "azurerm_service_plan" "appserviceplan" {
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   os_type             = "Linux"
-  #sku_name            = "P1v2"
-  sku_name            = "B1"
+  sku_name            = "P1v2" # ajusta según disponibilidad/costos
 }
 
-# Web App con Docker (App Service)
+# Web App con Docker
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
@@ -67,30 +67,22 @@ resource "azurerm_linux_web_app" "webapp" {
     always_on = true
 
     application_stack {
-      docker_image     = var.app_image
-      docker_image_tag = var.app_image_tag
+      docker_image_name   = "${var.app_image}:${var.app_image_tag}" # imagen + tag juntos
+      docker_registry_url = "https://ghcr.io"
     }
   }
 
   app_settings = {
-    DOCKER_REGISTRY_SERVER_URL          = "https://ghcr.io"
-    DOCKER_REGISTRY_SERVER_USERNAME     = var.ghcr_username
-    DOCKER_REGISTRY_SERVER_PASSWORD     = var.ghcr_pat
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
-
-    # Variable para que el front sepa a dónde pegar
-    BACKEND_URL = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+    BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
   }
 
-  lifecycle {
-    ignore_changes = [
-      site_config[0].application_stack[0].docker_image,
-      site_config[0].application_stack[0].docker_image_tag
-    ]
+  identity {
+    type = "SystemAssigned"
   }
 }
 
-# Integración App Service <-> VNet privada
+# Integración App Service <-> VNet
 resource "azurerm_app_service_virtual_network_swift_connection" "integration" {
   app_service_id = azurerm_linux_web_app.webapp.id
   subnet_id      = data.terraform_remote_state.net.outputs.appservice_subnet

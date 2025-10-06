@@ -18,3 +18,13 @@ variable "app_image_tag" {
   type        = string
   description = "Tag de la imagen Docker para App Service"
 }
+
+variable "appservice_name" {
+  type        = string
+  description = "Nombre del App Service"
+}
+
+variable "service_plan_name" {
+  type        = string
+  description = "Nombre del App Service Plan"
+}
