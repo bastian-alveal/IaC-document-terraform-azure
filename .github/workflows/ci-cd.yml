@@ -291,10 +291,10 @@ jobs:
       - name: Terraform Plan & Apply
         run: |
           if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
-            terraform plan -out=tfplan -var-file="terraform.tfvars"
+            terraform plan -out=tfplan
             terraform apply -auto-approve tfplan
           else
-            terraform destroy -auto-approve -var-file="terraform.tfvars"
+            terraform destroy -auto-approve
           fi
         env:
           ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
@@ -302,7 +302,7 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
           ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
           TF_VAR_tailscale_authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-      
+   
 
   # ---------------------- VM TEST RED BD ----------------------
   # vm-test-red-bd:

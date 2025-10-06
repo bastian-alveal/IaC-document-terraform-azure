@@ -1,4 +1,6 @@
 terraform {
+  required_version = ">= 1.5.0"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -16,7 +18,9 @@ provider "azurerm" {
   subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
 }
 
-# Estado remoto de la red
+# ======================================================
+# 🔹 Estado remoto de la red (infra base)
+# ======================================================
 data "terraform_remote_state" "net" {
   backend = "azurerm"
   config = {
@@ -27,13 +31,17 @@ data "terraform_remote_state" "net" {
   }
 }
 
-# Generar contraseña aleatoria para el admin
+# ======================================================
+# 🔹 Genera una contraseña aleatoria para el usuario admin
+# ======================================================
 resource "random_password" "admin_password" {
   length  = 16
   special = true
 }
 
-# NIC de la VM
+# ======================================================
+# 🔹 Interfaz de red (NIC)
+# ======================================================
 resource "azurerm_network_interface" "vm_nic" {
   name                = "vm-tailscale-nic"
   location            = data.terraform_remote_state.net.outputs.location
@@ -46,7 +54,9 @@ resource "azurerm_network_interface" "vm_nic" {
   }
 }
 
-# VM
+# ======================================================
+# 🔹 Máquina Virtual Linux (Ubuntu 22.04 LTS)
+# ======================================================
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = "vm-tailscale"
   location            = data.terraform_remote_state.net.outputs.location
@@ -54,9 +64,9 @@ resource "azurerm_linux_virtual_machine" "vm" {
   network_interface_ids = [azurerm_network_interface.vm_nic.id]
   size                = "Standard_B1s"
 
-  admin_username      = "azureuser"
-  admin_password      = random_password.admin_password.result
-  disable_password_authentication = false
+  admin_username                   = "azureuser"
+  admin_password                   = random_password.admin_password.result
+  disable_password_authentication  = false
 
   os_disk {
     caching              = "ReadWrite"
@@ -70,10 +80,11 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 
-  # Genera el cloud-init con el token sensible
+  # Cloud-init para configurar Tailscale en el arranque
   custom_data = base64encode(
     templatefile("${path.module}/cloud-init.yaml.tpl", {
       tailscale_authkey = var.tailscale_authkey
     })
   )
 }
+
