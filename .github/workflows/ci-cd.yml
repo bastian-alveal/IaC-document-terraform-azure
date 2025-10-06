@@ -231,28 +231,53 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
           ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
 
+      # - run: |
+      #     if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
+      #       terraform plan -out=tfplan \
+      #         -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
+      #         -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
+      #         -var="app_image=${{ secrets.APP_IMAGE }}" \
+      #         -var="app_image_tag=${{ secrets.APP_IMAGE_TAG }}"
+
+      #       terraform apply -auto-approve tfplan
+      #     else
+      #       terraform destroy -auto-approve \
+      #         -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
+      #         -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
+      #         -var="app_image=${{ secrets.APP_IMAGE }}" \
+      #         -var="app_image_tag=${{ secrets.APP_IMAGE_TAG }}"
+      #     fi
+      #   env:
+      #     ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
+      #     ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
+      #     ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
+      #     ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
+
       - run: |
           if [ "${{ github.event.inputs.action }}" == "deploy" ]; then
             terraform plan -out=tfplan \
-              -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
-              -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
-              -var="app_image=${{ secrets.APP_IMAGE }}" \
-              -var="app_image_tag=${{ secrets.APP_IMAGE_TAG }}"
+              -var="app_image=$APP_IMAGE" \
+              -var="app_image_tag=$APP_IMAGE_TAG" \
+              -var="ghcr_username=$GHCR_USERNAME" \
+              -var="ghcr_pat=$GHCR_PAT"
 
             terraform apply -auto-approve tfplan
           else
             terraform destroy -auto-approve \
-              -var="ghcr_username=${{ secrets.GHCR_USERNAME }}" \
-              -var="ghcr_pat=${{ secrets.GHCR_PAT }}" \
-              -var="app_image=${{ secrets.APP_IMAGE }}" \
-              -var="app_image_tag=${{ secrets.APP_IMAGE_TAG }}"
+              -var="app_image=$APP_IMAGE" \
+              -var="app_image_tag=$APP_IMAGE_TAG" \
+              -var="ghcr_username=$GHCR_USERNAME" \
+              -var="ghcr_pat=$GHCR_PAT"
           fi
         env:
           ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }}
           ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }}
           ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
           ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
-
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          APP_IMAGE: ${{ secrets.APP_IMAGE }}
+          APP_IMAGE_TAG: ${{ secrets.APP_IMAGE_TAG }}
   # ---------------------- VM TEST RED BD ----------------------
   # vm-test-red-bd:
   #   name: VM Test Red BD
