@@ -33,7 +33,18 @@ resource "azurerm_subnet" "appservice" {
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.10.1.0/24"]
 
+  delegation {
+    name = "delegation-appservice"
+
+    service_delegation {
+      name = "Microsoft.Web/serverFarms"
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/action",
+      ]
+    }
+  }
 }
+
 
 # Subnet para Container Apps 
 resource "azurerm_subnet" "containerapp" {
