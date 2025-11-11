@@ -19,3 +19,7 @@ az containerapp logs show \
 
 # para ejecutar todo sobre el mismo repo a iniciar/levatar
 terraform init && terraform apply --auto-approve
+
+# para probar conectividad con la DDBB
+nc -zv 10.10.3.X 5432
+

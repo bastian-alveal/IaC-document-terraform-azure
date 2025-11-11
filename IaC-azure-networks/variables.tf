@@ -7,5 +7,5 @@ variable "rg_name" {
 variable "location" {
   description = "Región de Azure"
   type        = string
-  default     = "eastus"
+  default     = "eastus2"
 }
