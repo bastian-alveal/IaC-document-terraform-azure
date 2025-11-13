@@ -18,9 +18,6 @@ provider "azurerm" {
   subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
 }
 
-# ==========================================
-# REMOTE STATES
-# ==========================================
 data "terraform_remote_state" "net" {
   backend = "azurerm"
   config = {
@@ -41,17 +38,11 @@ data "terraform_remote_state" "ca" {
   }
 }
 
-# ==========================================
-# RANDOM NAME
-# ==========================================
 resource "random_integer" "ri" {
   min = 10000
   max = 99999
 }
 
-# ==========================================
-# APP SERVICE PLAN
-# ==========================================
 resource "azurerm_service_plan" "appserviceplan" {
   name                = "webapp-asp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
@@ -60,9 +51,6 @@ resource "azurerm_service_plan" "appserviceplan" {
   sku_name            = "P1v3"
 }
 
-# ==========================================
-# LINUX WEB APP
-# ==========================================
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
@@ -73,18 +61,18 @@ resource "azurerm_linux_web_app" "webapp" {
   site_config {
     always_on = true
 
-    # ------------ LA ÚNICA FORMA SOPORTADA REAL ------------
-    linux_fx_version = "DOCKER|ghcr.io/${var.app_image}:${var.app_image_tag}"
+    application_stack {
+      docker_registry_url = "https://ghcr.io"
+      docker_image_name   = "${var.app_image}:${var.app_image_tag}"
+    }
   }
 
   app_settings = {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
-    BACKEND_URL                          = data.terraform_remote_state.ca.outputs.containerapp_fqdn
-
-    # --------- AUTENTICACIÓN PARA GHCR PRIVADO ----------
-    DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
-    DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
-    DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
+    BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+    DOCKER_REGISTRY_SERVER_URL          = "https://ghcr.io"
+    DOCKER_REGISTRY_SERVER_USERNAME     = var.ghcr_username
+    DOCKER_REGISTRY_SERVER_PASSWORD     = var.ghcr_pat
   }
 
   identity {
@@ -92,9 +80,6 @@ resource "azurerm_linux_web_app" "webapp" {
   }
 }
 
-# ==========================================
-# VNET INTEGRATION
-# ==========================================
 resource "azurerm_app_service_virtual_network_swift_connection" "integration" {
   app_service_id = azurerm_linux_web_app.webapp.id
   subnet_id      = data.terraform_remote_state.net.outputs.appservice_subnet
