@@ -75,6 +75,10 @@ resource "azurerm_linux_web_app" "webapp" {
   app_settings = {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
     BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+
+    DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
+    DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
+    DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
   }
 
   identity {
