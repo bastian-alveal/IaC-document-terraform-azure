@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 4.11.0"
+      version = "= 3.107.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -17,6 +17,9 @@ provider "azurerm" {
   features {}
 }
 
+# ================================
+# REMOTE STATES
+# ================================
 data "terraform_remote_state" "net" {
   backend = "azurerm"
   config = {
@@ -37,12 +40,17 @@ data "terraform_remote_state" "ca" {
   }
 }
 
+# ================================
+# RANDOM NAME
+# ================================
 resource "random_integer" "ri" {
   min = 10000
   max = 99999
 }
 
-# PLAN
+# ================================
+# SERVICE PLAN
+# ================================
 resource "azurerm_service_plan" "appserviceplan" {
   name                = "webapp-asp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
@@ -51,40 +59,43 @@ resource "azurerm_service_plan" "appserviceplan" {
   sku_name            = "P1v2"
 }
 
-# WEBAPP
+# ================================
+# LINUX WEB APP (DOCKER GHCR)
+# ================================
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
-  resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   location            = data.terraform_remote_state.net.outputs.location
+  resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   service_plan_id     = azurerm_service_plan.appserviceplan.id
   https_only          = true
-
-  identity {
-    type = "SystemAssigned"
-  }
 
   site_config {
     always_on = true
 
-    application_stack {
-      docker {
-        registry_url = "ghcr.io"
-        image_name   = var.app_image
-        tag          = var.app_image_tag
-      }
-    }
+    # ESTA ES LA FORMA CORRECTA PARA AZURERM 3.x
+    linux_fx_version = "DOCKER|ghcr.io/${var.app_image}:${var.app_image_tag}"
   }
 
   app_settings = {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
+
     BACKEND_URL = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+
+    # AUTENTICACIÓN GHCR (AZURERM 3.x SOLO LO PERMITE AQUÍ)
+    DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
+    DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
+    DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
+  }
+
+  identity {
+    type = "SystemAssigned"
   }
 }
 
-# VNET integration
+# ================================
+# VNET INTEGRATION
+# ================================
 resource "azurerm_app_service_virtual_network_swift_connection" "integration" {
   app_service_id = azurerm_linux_web_app.webapp.id
   subnet_id      = data.terraform_remote_state.net.outputs.appservice_subnet
 }
-
-
