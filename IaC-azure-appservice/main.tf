@@ -70,15 +70,18 @@ resource "azurerm_linux_web_app" "webapp" {
       docker_image_name   = "${var.app_image}:${var.app_image_tag}" # imagen + tag juntos
       docker_registry_url = "https://ghcr.io"
     }
+
+    container_registry {
+      server_url = "https://ghcr.io"
+      username   = var.ghcr_username
+      password   = var.ghcr_pat
+    }
   }
 
   app_settings = {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
     BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
 
-    DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
-    DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
-    DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
   }
 
   identity {
