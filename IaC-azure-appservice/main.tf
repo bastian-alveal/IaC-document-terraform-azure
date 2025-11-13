@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "= 3.107.0"
+      version = "~> 4.11.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -15,10 +15,8 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
 }
 
-# Remote state de networks
 data "terraform_remote_state" "net" {
   backend = "azurerm"
   config = {
@@ -29,7 +27,6 @@ data "terraform_remote_state" "net" {
   }
 }
 
-# Remote state del container app (backend URL)
 data "terraform_remote_state" "ca" {
   backend = "azurerm"
   config = {
@@ -45,49 +42,49 @@ resource "random_integer" "ri" {
   max = 99999
 }
 
-# App Service Plan
+# PLAN
 resource "azurerm_service_plan" "appserviceplan" {
   name                = "webapp-asp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
-
-  os_type = "Linux"
-  sku_name = "P1v2"
+  os_type             = "Linux"
+  sku_name            = "P1v2"
 }
 
-# Web App con Docker
+# WEBAPP
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
-  location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
+  location            = data.terraform_remote_state.net.outputs.location
   service_plan_id     = azurerm_service_plan.appserviceplan.id
   https_only          = true
-
-  site_config {
-    always_on = true
-
-    # Método correcto para Docker en App Service
-    linux_fx_version = "DOCKER|ghcr.io/${var.app_image}:${var.app_image_tag}"
-  }
-
-  app_settings = {
-    WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
-    BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
-
-    # Estos SÍ funcionan con azurerm v3
-    DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
-    DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
-    DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
-  }
 
   identity {
     type = "SystemAssigned"
   }
+
+  site_config {
+    always_on = true
+
+    application_stack {
+      docker {
+        registry_url = "ghcr.io"
+        image_name   = var.app_image
+        tag          = var.app_image_tag
+      }
+    }
+  }
+
+  app_settings = {
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
+    BACKEND_URL = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+  }
 }
 
-# Integración a la VNET
+# VNET integration
 resource "azurerm_app_service_virtual_network_swift_connection" "integration" {
   app_service_id = azurerm_linux_web_app.webapp.id
   subnet_id      = data.terraform_remote_state.net.outputs.appservice_subnet
 }
+
 
