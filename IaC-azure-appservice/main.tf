@@ -50,18 +50,18 @@ resource "random_integer" "ri" {
 }
 
 # ==========================================
-# SERVICE PLAN
+# APP SERVICE PLAN
 # ==========================================
 resource "azurerm_service_plan" "appserviceplan" {
   name                = "webapp-asp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   os_type             = "Linux"
-  sku_name            = "P1v2"
+  sku_name            = "P1v3"
 }
 
 # ==========================================
-# LINUX WEB APP (Docker con GHCR)
+# LINUX WEB APP
 # ==========================================
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
@@ -73,18 +73,15 @@ resource "azurerm_linux_web_app" "webapp" {
   site_config {
     always_on = true
 
-    # ESTE ES EL FORMATO QUE ACEPTA AZURE HOY
-    application_stack {
-      docker_registry_url = "https://ghcr.io"
-      docker_image_name   = "${var.app_image}:${var.app_image_tag}"
-    }
+    # ------------ LA ÚNICA FORMA SOPORTADA REAL ------------
+    linux_fx_version = "DOCKER|ghcr.io/${var.app_image}:${var.app_image_tag}"
   }
 
   app_settings = {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
-    BACKEND_URL = data.terraform_remote_state.ca.outputs.containerapp_fqdn
+    BACKEND_URL                          = data.terraform_remote_state.ca.outputs.containerapp_fqdn
 
-    # GHCR AUTH (FUNCIONA EN AZURERM 3.x)
+    # --------- AUTENTICACIÓN PARA GHCR PRIVADO ----------
     DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
     DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
     DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
