@@ -29,7 +29,7 @@ data "terraform_remote_state" "net" {
   }
 }
 
-# Estado remoto del container app (para obtener el backend FQDN)
+# Estado remoto del container app (backend FQDN)
 data "terraform_remote_state" "ca" {
   backend = "azurerm"
   config = {
@@ -52,10 +52,10 @@ resource "azurerm_service_plan" "appserviceplan" {
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
   os_type             = "Linux"
-  sku_name            = "P1v2" # ajusta según disponibilidad/costos
+  sku_name            = "P1v2"
 }
 
-# Web App con Docker
+# Web App con Docker (método CORRECTO para GHCR)
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
@@ -66,22 +66,18 @@ resource "azurerm_linux_web_app" "webapp" {
   site_config {
     always_on = true
 
-    application_stack {
-      docker_image_name   = "${var.app_image}:${var.app_image_tag}" # imagen + tag juntos
-      docker_registry_url = "https://ghcr.io"
-    }
-
-    container_registry {
-      server_url = "https://ghcr.io"
-      username   = var.ghcr_username
-      password   = var.ghcr_pat
-    }
+    # ESTE ES EL MÉTODO CORRECTO PARA DOCKER EN APP SERVICE (Terraform 4.x)
+    linux_fx_version = "DOCKER|ghcr.io/${var.app_image}:${var.app_image_tag}"
   }
 
   app_settings = {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
     BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
 
+    # AUTENTICACIÓN DOCKER -> AQUÍ SÍ FUNCIONA (porque usamos linux_fx_version)
+    DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
+    DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
+    DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
   }
 
   identity {
@@ -89,7 +85,7 @@ resource "azurerm_linux_web_app" "webapp" {
   }
 }
 
-# Integración App Service <-> VNet
+# Integración a la VNet
 resource "azurerm_app_service_virtual_network_swift_connection" "integration" {
   app_service_id = azurerm_linux_web_app.webapp.id
   subnet_id      = data.terraform_remote_state.net.outputs.appservice_subnet
