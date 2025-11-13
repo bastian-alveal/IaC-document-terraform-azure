@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.11.0"
+      version = "= 3.107.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -18,7 +18,7 @@ provider "azurerm" {
   subscription_id = "1bc41998-e448-4a2c-b94a-731d3b7de5b1"
 }
 
-# Estado remoto de red
+# Remote state de networks
 data "terraform_remote_state" "net" {
   backend = "azurerm"
   config = {
@@ -29,7 +29,7 @@ data "terraform_remote_state" "net" {
   }
 }
 
-# Estado remoto del container app (backend FQDN)
+# Remote state del container app (backend URL)
 data "terraform_remote_state" "ca" {
   backend = "azurerm"
   config = {
@@ -40,7 +40,6 @@ data "terraform_remote_state" "ca" {
   }
 }
 
-# Random para nombres únicos
 resource "random_integer" "ri" {
   min = 10000
   max = 99999
@@ -51,11 +50,12 @@ resource "azurerm_service_plan" "appserviceplan" {
   name                = "webapp-asp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
   resource_group_name = data.terraform_remote_state.net.outputs.rg_name
-  os_type             = "Linux"
-  sku_name            = "P1v2"
+
+  os_type = "Linux"
+  sku_name = "P1v2"
 }
 
-# Web App con Docker (método CORRECTO para GHCR)
+# Web App con Docker
 resource "azurerm_linux_web_app" "webapp" {
   name                = "webapp-${random_integer.ri.result}"
   location            = data.terraform_remote_state.net.outputs.location
@@ -66,7 +66,7 @@ resource "azurerm_linux_web_app" "webapp" {
   site_config {
     always_on = true
 
-    # ESTE ES EL MÉTODO CORRECTO PARA DOCKER EN APP SERVICE (Terraform 4.x)
+    # Método correcto para Docker en App Service
     linux_fx_version = "DOCKER|ghcr.io/${var.app_image}:${var.app_image_tag}"
   }
 
@@ -74,7 +74,7 @@ resource "azurerm_linux_web_app" "webapp" {
     WEBSITES_ENABLE_APP_SERVICE_STORAGE = "false"
     BACKEND_URL                         = data.terraform_remote_state.ca.outputs.containerapp_fqdn
 
-    # AUTENTICACIÓN DOCKER -> AQUÍ SÍ FUNCIONA (porque usamos linux_fx_version)
+    # Estos SÍ funcionan con azurerm v3
     DOCKER_REGISTRY_SERVER_URL      = "https://ghcr.io"
     DOCKER_REGISTRY_SERVER_USERNAME = var.ghcr_username
     DOCKER_REGISTRY_SERVER_PASSWORD = var.ghcr_pat
@@ -85,8 +85,9 @@ resource "azurerm_linux_web_app" "webapp" {
   }
 }
 
-# Integración a la VNet
+# Integración a la VNET
 resource "azurerm_app_service_virtual_network_swift_connection" "integration" {
   app_service_id = azurerm_linux_web_app.webapp.id
   subnet_id      = data.terraform_remote_state.net.outputs.appservice_subnet
 }
+
